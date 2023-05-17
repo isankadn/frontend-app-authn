@@ -2,7 +2,7 @@ import React from 'react';
 import { Provider } from 'react-redux';
 
 import { getConfig, mergeConfig } from '@edx/frontend-platform';
-import { sendPageEvent } from '@edx/frontend-platform/analytics';
+import { sendPageEvent, sendTrackEvent } from '@edx/frontend-platform/analytics';
 import { injectIntl, IntlProvider } from '@edx/frontend-platform/i18n';
 import { mount } from 'enzyme';
 import { MemoryRouter } from 'react-router-dom';
@@ -571,6 +571,13 @@ describe('LoginPage', () => {
   it('should send page event when login page is rendered', () => {
     mount(reduxWrapper(<IntlLoginPage {...props} />));
     expect(sendPageEvent).toHaveBeenCalledWith('login_and_registration', 'login');
+  });
+
+  it('should send track event when forgot password link is clicked', () => {
+    const loginPage = mount(reduxWrapper(<IntlLoginPage {...props} />));
+    loginPage.find('#forgot-password').last().simulate('click');
+
+    expect(sendTrackEvent).toHaveBeenCalledWith('edx.bi.password-reset_form.toggled', { category: 'user-engagement' });
   });
 
   it('should backup the login form state when shouldBackupState is true', () => {
