@@ -8,7 +8,10 @@ import { sendPageEvent } from '@edx/frontend-platform/analytics';
 import {
   getCountryList, getLocale, useIntl,
 } from '@edx/frontend-platform/i18n';
-import { Form, Spinner, StatefulButton } from '@edx/paragon';
+import {
+  Alert, Form, Spinner, StatefulButton,
+} from '@edx/paragon';
+import { Check } from '@edx/paragon/icons';
 import PropTypes from 'prop-types';
 import { Helmet } from 'react-helmet';
 import Skeleton from 'react-loading-skeleton';
@@ -509,13 +512,16 @@ const RegistrationPage = (props) => {
           headingTitle={formatMessage(messages['register.institution.login.page.title'])}
         />
       );
+    } if (registrationResult.success) {
+          window.parent.postMessage({message: "redirection", redirectUrl: registrationResult.redirectUrl }, "*");
+          return null
     }
     return (
       <>
         <Helmet>
           <title>{formatMessage(messages['register.page.title'], { siteName: getConfig().SITE_NAME })}</title>
         </Helmet>
-        <RedirectLogistration
+          <RedirectLogistration
           success={registrationResult.success}
           redirectUrl={registrationResult.redirectUrl}
           finishAuthUrl={finishAuthUrl}
@@ -523,13 +529,14 @@ const RegistrationPage = (props) => {
           redirectToProgressiveProfilingPage={
             getConfig().ENABLE_PROGRESSIVE_PROFILING_ON_AUTHN && Object.keys(optionalFields).includes('fields')
           }
-        />
+          />
         {autoSubmitRegisterForm && !errorCode.type ? (
           <div className="mw-xs mt-5 text-center">
             <Spinner animation="border" variant="primary" id="tpa-spinner" />
           </div>
         ) : (
           <div className="mw-xs mt-3">
+
             <ThirdPartyAuthAlert
               currentProvider={currentProvider}
               platformName={platformName}
