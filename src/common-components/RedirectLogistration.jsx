@@ -36,16 +36,22 @@ const RedirectLogistration = (props) => {
       // TODO: Do we still need this cookie?
       setCookie('van-504-returning-user', true);
       const registrationResult = { redirectUrl: finalRedirectUrl, success };
-      return (
-        <Redirect to={{
-          pathname: AUTHN_PROGRESSIVE_PROFILING,
-          state: {
-            registrationResult,
-            optionalFields,
-          },
-        }}
-        />
-      );
+       window.parent.postMessage({message: "redirection", redirectUrl: `${window.location.origin}/welcome`, 
+        state: {
+          registrationResult,
+          optionalFields,
+      }}, "*"); 
+      return null 
+      // return (
+      //   <Redirect to={{
+      //     pathname: AUTHN_PROGRESSIVE_PROFILING,
+      //     state: {
+      //       registrationResult,
+      //       optionalFields,
+      //     },
+      //   }}
+      //   />
+      // );
     }
 
     // Redirect to Recommendation page

@@ -513,8 +513,8 @@ const RegistrationPage = (props) => {
         />
       );
     } if (registrationResult.success) {
-          window.parent.postMessage({message: "redirection", redirectUrl: registrationResult.redirectUrl }, "*");
-          return null
+          // window.parent.postMessage({message: "redirection", redirectUrl: `${window.location.origin}/welcome`}, "*");
+          // return null
     }
     return (
       <>

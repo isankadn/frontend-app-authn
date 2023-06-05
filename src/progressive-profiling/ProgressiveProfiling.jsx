@@ -51,19 +51,20 @@ const ProgressiveProfiling = (props) => {
   const [values, setValues] = useState({});
   const [openDialog, setOpenDialog] = useState(false);
   const [showRecommendationsPage, setShowRecommendationsPage] = useState(false);
-  const authenticatedUser = getAuthenticatedUser();
+  // const authenticatedUser = getAuthenticatedUser();
+  const authenticatedUser  = { userId: 172, username: 'ahtesham_3345'};
   const DASHBOARD_URL = getConfig().LMS_BASE_URL.concat(DEFAULT_REDIRECT_URL);
 
   useEffect(() => {
     configureAuth(AxiosJwtAuthService, { loggingService: getLoggingService(), config: getConfig() });
-    ensureAuthenticatedUser(DASHBOARD_URL)
-      .then(() => {
-        hydrateAuthenticatedUser().then(() => {
-          setReady(true);
-        });
-      })
-      .catch(() => {});
-
+    // ensureAuthenticatedUser(DASHBOARD_URL)
+    //   .then(() => {
+    //     hydrateAuthenticatedUser().then(() => {
+    //       setReady(true);
+    //     });
+    //   })
+    //   .catch(() => {});
+    setReady(true);
     if (registrationResponse) {
       setRegistrationResult(registrationResponse);
     }
@@ -94,10 +95,10 @@ const ProgressiveProfiling = (props) => {
     }
   }, [authenticatedUser, enablePersonalizedRecommendations, registrationResponse]);
 
-  if (!location.state || !location.state.registrationResult || formRenderState === FAILURE_STATE) {
-    global.location.assign(DASHBOARD_URL);
-    return null;
-  }
+  // if (!location.state || !location.state.registrationResult || formRenderState === FAILURE_STATE) {
+  //   //global.location.assign(DASHBOARD_URL);
+  //   return null;
+  // }
 
   if (!ready) {
     return null;
