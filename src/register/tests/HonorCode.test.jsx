@@ -36,7 +36,7 @@ describe('HonorCodeTest', () => {
     expect(honorCode.find('.form-text-size').last().text()).toEqual(errorMessage);
   });
 
-  it('should render Honor code field', () => {
+  it('should render Honor code fields', () => {
     const expectedMsg = 'I agree to the Your Platform Name Here\u00a0Honor Codein a new tab';
     const honorCode = mount(
       <IntlProvider locale="en">
