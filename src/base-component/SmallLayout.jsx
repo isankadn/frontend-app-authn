@@ -26,6 +26,7 @@ const SmallLayout = ({ intl }) => (
           <span className="text-accent-a d-inline-block">
             {intl.formatMessage(messages['with.site.name'], { siteName: getConfig().SITE_NAME })}
           </span>
+          <span className="ml-1">{intl.formatMessage(messages['start.learning.after.site.name'])}</span>
         </h1>
       </div>
     </div>

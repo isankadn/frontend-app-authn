@@ -3,7 +3,12 @@ import { defineMessages } from '@edx/frontend-platform/i18n';
 const messages = defineMessages({
   'start.learning': {
     id: 'start.learning',
-    defaultMessage: 'Start learning',
+    defaultMessage: 'Discover, Grow, Achieve',
+    description: 'Header text for logistration MFE pages',
+  },
+  'start.learning.after.site.name': {
+    id: 'start.learning.after.site.name',
+    defaultMessage: 'Your Digital Campus Awaits.',
     description: 'Header text for logistration MFE pages',
   },
   'with.site.name': {
