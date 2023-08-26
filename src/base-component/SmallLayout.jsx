@@ -16,18 +16,22 @@ const SmallLayout = ({ intl }) => (
       </Hyperlink>
       <div className="d-flex align-items-center mb-3 mt-3 mr-3">
         <div className={classNames({ 'small-yellow-line mr-n2.5': getConfig().SITE_NAME === 'edX' })} />
-        <h1
-          className={classNames(
-            'text-white mt-3.5 mb-3.5',
-            { 'ml-4.5': getConfig().SITE_NAME !== 'edX' },
-          )}
-        >
-          <span className="mr-1">{intl.formatMessage(messages['start.learning'])}</span>
-          <span className="text-accent-a d-inline-block">
-            {intl.formatMessage(messages['with.site.name'], { siteName: getConfig().SITE_NAME })}
-          </span>
-          <span className="ml-1">{intl.formatMessage(messages['start.learning.after.site.name'])}</span>
-        </h1>
+        <div className="d-flex flex-column text-center">
+            <div
+              className={classNames(
+                'display-1 text-white mw-xs mb-2',
+                { 'ml-6': getConfig().SITE_NAME !== 'edX' },
+              )}
+            >
+              {intl.formatMessage(messages['start.learning'])}
+            </div>
+            <div className="text-accent-a mw-xs ml-6 mb-4 h1">
+              {intl.formatMessage(messages['with.site.name'], { siteName: getConfig().SITE_NAME })}
+            </div>
+            <div className="text-white mw-xs ml-6 mb-4 font-weight-bold">
+            {intl.formatMessage(messages['start.learning.after.site.name'])}          
+            </div>
+          </div>
       </div>
     </div>
   </span>
