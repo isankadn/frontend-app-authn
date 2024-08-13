@@ -230,17 +230,20 @@ class RegistrationPage extends React.Component {
 
   handleSubmit = (e) => {
     e.preventDefault();
-
+    
     const { startTime } = this.state;
     const totalRegistrationTime = (Date.now() - startTime) / 1000;
     const dynamicFieldErrorMessages = {};
-
+    console.log('this.state', this.state);
     let payload = {
       name: this.state.name,
       username: this.state.username,
       email: this.state.email,
       is_authn_mfe: true,
+      country: this.state.country,
+      year_of_birth: this.state.year_of_birth,
     };
+    console.log('payload', payload);
 
     if (this.props.thirdPartyAuthContext.currentProvider) {
       payload.social_auth_provider = this.props.thirdPartyAuthContext.currentProvider;
@@ -264,6 +267,7 @@ class RegistrationPage extends React.Component {
       ) {
         payload[FIELDS.HONOR_CODE] = true;
       }
+      payload.country = this.state.country;
     } else {
       payload.country = this.state.country;
       payload.honor_code = true;
@@ -273,6 +277,10 @@ class RegistrationPage extends React.Component {
       this.setState(prevState => ({
         errorCode: FORM_SUBMISSION_ERROR,
         failureCount: prevState.failureCount + 1,
+        errors: {
+          ...prevState.errors,
+          country: prevState.errors.country || '', // Ensure country error is a string
+        },
       }));
       return;
     }
@@ -286,34 +294,43 @@ class RegistrationPage extends React.Component {
 
     // add query params to the payload
     payload = { ...payload, ...this.queryParams };
+    console.log('payload', payload);
     this.setState({
       totalRegistrationTime,
     }, () => {
       this.props.registerNewUser(payload);
     });
   }
-
+  isFieldRequired = (fieldName) => {
+    // Add logic to determine if a field is required
+    // For example:
+    const requiredFields = ['name', 'email', 'username', 'password', 'country', 'year_of_birth', 'terms_of_service'];
+    return requiredFields.includes(fieldName);
+  }
   handleOnBlur = (e) => {
     let { name, value } = e.target;
     this.setState({
       focusedField: '',
     });
 
-    if (name === 'passwordValidation') {
-      name = 'password';
-      value = this.state.password;
+    if (value || this.isFieldRequired(name)) {
+      const payload = {
+        is_authn_mfe: true,
+        form_field_key: name,
+        email: this.state.email,
+        username: this.state.username,
+        password: this.state.password,
+        name: this.state.name,
+        honor_code: true,
+        country: this.state.country,
+      };
+      this.validateInput(name, value, payload);
+    } else {
+      // Clear the error if the field is empty and not required
+      const { errors } = this.state;
+      errors[name] = '';
+      this.props.setRegistrationFormData({ errors });
     }
-    const payload = {
-      is_authn_mfe: true,
-      form_field_key: name,
-      email: this.state.email,
-      username: this.state.username,
-      password: this.state.password,
-      name: this.state.name,
-      honor_code: true,
-      country: this.state.country,
-    };
-    this.validateInput(name, value, payload);
   }
 
   handleOnChange = (e) => {
@@ -396,25 +413,50 @@ class RegistrationPage extends React.Component {
     this.setState({ errors });
   }
 
+  
+  // Modify the isFormValid method
   isFormValid(payload, dynamicFieldError) {
+    const getMinimumAllowedBirthYear = () => {
+      const currentYear = new Date().getFullYear();
+      return currentYear - 13;
+    };
+    
     const { errors } = this.state;
+    console.log('payload', payload);
+    console.log("errors", errors);
     let isValid = true;
+    const minimumAllowedBirthYear = getMinimumAllowedBirthYear();
+  
     Object.keys(payload).forEach(key => {
-      if (!payload[key]) {
-        errors[key] = (key in dynamicFieldError) ? dynamicFieldError[key] : this.props.intl.formatMessage(messages[`empty.${key}.field.error`]);
-      }
-      // Mark form invalid, if there was already a validation error for this key or we added empty field error
-      if (errors[key]) {
+      if (key === 'year_of_birth') {
+        const birthYear = parseInt(payload[key], 10);
+        if (isNaN(birthYear) || birthYear > minimumAllowedBirthYear) {
+          errors[key] = this.props.intl.formatMessage(messages['year_of_birth.validation.message'], { minYear: minimumAllowedBirthYear });
+          isValid = false;
+        } else {
+          errors[key] = '';
+        }
+      } else if (!payload[key] && this.isFieldRequired(key)) {
+        errors[key] = (key in dynamicFieldError) 
+          ? dynamicFieldError[key] 
+          : this.props.intl.formatMessage(messages[`empty.${key}.field.error`]);
         isValid = false;
+      } else {
+        // Clear the error if the field has a value
+        errors[key] = '';
       }
     });
-
-    const state = { ...payload, errors };
+  
+    // Ensure country error is always a string
+    errors.country = errors.country || '';
+  
     this.props.setRegistrationFormData({
-      ...state,
+      ...payload,
+      errors,
     });
     return isValid;
   }
+  
 
   validateInput(fieldName, value, payload) {
     let state = {};
@@ -521,30 +563,28 @@ class RegistrationPage extends React.Component {
           this.props.fetchRealtimeValidations(payload);
         }
         break;
-      case 'country':
-        value = value.trim(); // eslint-disable-line no-param-reassign
-        if (value) {
-          const normalizedValue = value.toLowerCase();
-          let selectedCountry = (
-            this.countryList.find((o) => o[COUNTRY_DISPLAY_KEY].toLowerCase().trim() === normalizedValue));
-          if (selectedCountry) {
-            value = selectedCountry[COUNTRY_CODE_KEY]; // eslint-disable-line no-param-reassign
-            errors.country = '';
-            break;
-          } else {
-            // Handling a case here where user enters a valid country code that needs to be
-            // evaluated and set its value as a valid value.
-            selectedCountry = (
-              this.countryList.find((o) => o[COUNTRY_CODE_KEY].toLowerCase().trim() === normalizedValue));
-            if (selectedCountry) {
-              value = selectedCountry[COUNTRY_CODE_KEY]; // eslint-disable-line no-param-reassign
-              errors.country = '';
-              break;
-            }
-          }
-        }
-        errors.country = intl.formatMessage(messages['empty.country.field.error']);
-        break;
+        case 'country':
+  if (value) {
+    value = value.trim();
+    const normalizedValue = value.toLowerCase();
+    let selectedCountry = this.countryList.find(
+      (o) => o[COUNTRY_DISPLAY_KEY].toLowerCase().trim() === normalizedValue
+      || o[COUNTRY_CODE_KEY].toLowerCase().trim() === normalizedValue
+    );
+    if (selectedCountry) {
+      value = selectedCountry[COUNTRY_CODE_KEY];
+      errors.country = '';
+    } else {
+      errors.country = this.props.intl.formatMessage(messages['invalid.country.field.error']);
+    }
+  } else if (payload) {
+    // Only set error if this is called during form submission
+    errors.country = this.props.intl.formatMessage(messages['empty.country.field.error']);
+  } else {
+    // Clear the error if the field is empty and not submitting
+    errors.country = '';
+  }
+  break;
       default:
         break;
     }
@@ -678,18 +718,20 @@ class RegistrationPage extends React.Component {
             return (
               <span key={fieldData.name}>
                 <CountryDropdown
-                  name="country"
-                  floatingLabel={intl.formatMessage(messages['registration.country.label'])}
-                  options={this.countryList}
-                  value={this.state.values[fieldData.name]}
-                  handleBlur={this.handleOnBlur}
-                  handleFocus={this.handleOnFocus}
-                  errorMessage={intl.formatMessage(messages['empty.country.field.error'])}
-                  handleChange={
-                    (value) => this.setState(prevState => ({ values: { ...prevState.values, country: value } }))
-                  }
-                  errorCode={this.state.errorCode}
-                />
+  name="country"
+  floatingLabel={intl.formatMessage(messages['registration.country.label'])}
+  options={this.countryList}
+  value={this.state.country}
+  autoComplete="on"
+  handleBlur={this.handleOnBlur}
+  handleFocus={this.handleOnFocus}
+  errorMessage={this.state.errors.country || ''}  // Ensure it's always a string
+  handleChange={(value) => {
+    this.setState({ country: value }, () => {
+      this.validateInput('country', value, null);
+    });
+  }}
+/>
               </span>
             );
           case FIELDS.HONOR_CODE:

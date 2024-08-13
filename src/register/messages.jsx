@@ -300,6 +300,12 @@ const messages = defineMessages({
     defaultMessage: 'Did you mean',
     description: 'Did you mean alert suggestion',
   },
+  'year_of_birth.validation.message': {
+    id: 'year_of_birth.validation.message',
+    defaultMessage: 'You must be at least 13 years old to register. Please enter a birth year of {minYear} or earlier.',
+    description: 'You must be at least 13 years old to register. Please enter a birth year of {minYear} or earlier.',
+  },
+ 
 });
 
 export default messages;
